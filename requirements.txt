@@ -1,0 +1,5 @@
+aiogram~=3.13
+python-dotenv~=1.0
+aiosqlite~=0.20
+fastapi~=0.115
+uvicorn[standard]~=0.30
