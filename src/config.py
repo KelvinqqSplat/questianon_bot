@@ -3,7 +3,7 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-BOT_TOKEN = os.getenv("BOT_TOKEN", "")
+BOT_TOKEN = os.getenv("BOT_TOKEN", "8728398396:AAFP3oouTqX5__Q3ws7LoKwJEbfoNJ4q6PY")
 if not BOT_TOKEN:
     raise RuntimeError("BOT_TOKEN is not set")
 
