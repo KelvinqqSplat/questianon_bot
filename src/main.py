@@ -74,3 +74,12 @@ async def telegram_webhook(secret: str, request: Request):
     update = TgUpdate.model_validate(body)
     await dp.feed_update(bot, update)
     return Response(status_code=200)
+
+if __name__ == "__main__":
+    import uvicorn
+    import os
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+    
+
+
