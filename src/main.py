@@ -19,6 +19,51 @@ from .handlers.inline import router as inline_router
 from .handlers.text import router as text_router
 from .handlers.admin import router as admin_router
 
+# === Собственный broadcast ===
+from aiogram.types import Message
+from aiogram.filters import Command
+import os
+
+# Суперадмины из переменной окружения
+SUPER_ADMIN_IDS = list(map(int, os.getenv("SUPER_ADMIN_IDS", "").split(","))) if os.getenv("SUPER_ADMIN_IDS") else []
+
+@dp.message(Command("broadcast"))
+async def broadcast_cmd(message: Message):
+    # Проверяем права
+    if message.from_user.id not in SUPER_ADMIN_IDS:
+        await message.reply("⛔ У вас нет прав на рассылку.")
+        return
+    
+    # Получаем текст после команды
+    text = message.text.replace("/broadcast", "").strip()
+    if not text:
+        await message.reply("📝 Напишите текст рассылки после команды.\nПример: /broadcast Привет всем!")
+        return
+    
+    # Подтверждение
+    confirm = await message.reply("📨 Начинаю рассылку...")
+    
+    # Получаем всех пользователей из БД
+    from .database import db_conn
+    async with db_conn() as conn:
+        async with conn.execute("SELECT user_id FROM users") as cur:
+            users = await cur.fetchall()
+    
+    if not users:
+        await confirm.edit_text("❌ Нет пользователей для рассылки.")
+        return
+    
+    count = 0
+    for (user_id,) in users:
+        try:
+            await bot.send_message(user_id, text)
+            count += 1
+            await asyncio.sleep(0.05)  # защита от флуда
+        except Exception:
+            pass  # игнорируем тех, кто заблокировал бота
+    
+    await confirm.edit_text(f"✅ Рассылка завершена. Отправлено {count} из {len(users)} пользователей.")
+
 bot = Bot(token=BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
 dp = Dispatcher()
 
